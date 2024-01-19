@@ -4,7 +4,7 @@ const Libro = require("../models/Libro");
 
 const { requiredScopes } = require("express-oauth2-jwt-bearer");
 
-router.get("/", requiredScopes("read:libros"), async (req, res) => {
+router.get("/", requiredScopes("read:productos"), async (req, res) => {
     try {
         const libros = await Libro.find();
         res.json(libros);
@@ -13,8 +13,24 @@ router.get("/", requiredScopes("read:libros"), async (req, res) => {
     }
 });
 
+//Obtener un libro
+router.get('/:id', requiredScopes("read:productos"), async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const libro = await Libro.findById(id);
+        if (!libro) {
+            const error = new Error('Libro no encontrado');
+            error.status = 404;
+            throw error;
+        }
+        res.json(libro);
+    } catch (err) {
+        next(err);
+    }
+});
+
 //Crear un nuevo libro
-router.post("/", requiredScopes("write:libros"), async (req, res) => {
+router.post("/", requiredScopes("write:productos"), async (req, res) => {
     try {
         const nuevoLibro = new Libro(req.body);
         await nuevoLibro.save();
@@ -25,9 +41,9 @@ router.post("/", requiredScopes("write:libros"), async (req, res) => {
 });
 
 //Actualizar libro
-router.put("/:id", requiredScopes("write:libros"), async (req, res) => {
+router.put('/:id', requiredScopes("write:productos"), async (req, res) => {
     try {
-        const Libro = await Libro.findByIdAndUpdate(req.params.id, req.body,
+        const libro = await Libro.findByIdAndUpdate(req.params.id, req.body,
             {
                 new: true,
             });
@@ -38,7 +54,7 @@ router.put("/:id", requiredScopes("write:libros"), async (req, res) => {
 });
 
 //Eliminar libro
-router.delete("/:id", requiredScopes("write:libros"), async (req, res) => {
+router.delete("/:id", requiredScopes("write:productos"), async (req, res) => {
     try {
         await Libro.findByIdAndDelete(req.params.id);
         res.json({ message: "Libro eliminado correctamente" });
